@@ -12,13 +12,10 @@ uploaded_files = st.sidebar.file_uploader(
 )
 
 if uploaded_files:
-    try:
         slices = [pydicom.dcmread(f) for f in uploaded_files]
         slices.sort(key=lambda x: int(getattr(x, 'InstanceNumber', 0)))
         images = [s.pixel_array.astype(np.float32) for s in slices]
 
-
-    try:
         num_slices = len(images)
         if num_slices > 1:
             slice_idx = st.sidebar.slider("Select Slice", 0, num_slices - 1, 0)
@@ -56,11 +53,7 @@ if uploaded_files:
         img_display = Image.fromarray(img.astype(np.uint8))
         st.image(img_display, caption=f"Slice {slice_idx + 1}/{len(images)}", use_column_width=True)
 
-    except Exception as e:
-        st.error(f"⚠️ Error reading DICOM files: {e}")
 
-except Exception as e:
-        st.error(f"⚠️ Error reading DICOM files: {e}")
 else:
     st.info("👈 Upload multiple DICOM (.dcm) files using the sidebar to begin.")
 
