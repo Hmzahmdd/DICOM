@@ -1,35 +1,53 @@
+import streamlit as st
 import pydicom
-import matplotlib.pyplot as plt
-
-ds = pydicom.dcmread("case1_008.dcm")
-plt.imshow(ds.pixel_array, cmap="gray")
-plt.title("DICOM Image")
-plt.axis("off")
-plt.show()
-
-print("Patient Name:", ds.PatientName)
-print("Patient ID:", ds.PatientID)
-print("Study Date:", ds.StudyDate)
-print("Modality:", ds.Modality)
-print("Slice Thickness:", ds.SliceThickness)
-print("Pixel Spacing:", ds.PixelSpacing)
-
-
+import numpy as np
 import cv2
-adjusted = cv2.convertScaleAbs(ds.pixel_array, alpha=1.2, beta=50)  
-plt.imshow(adjusted, cmap="gray")
-plt.title("Adjusted Image")
-plt.show()
+from PIL import Image
+
+st.set_page_config(layout="wide")
+st.title("🩻 Multi-Slice DICOM Viewer (Streamlit)")
+
+uploaded_files = st.sidebar.file_uploader(
+    "Upload multiple DICOM files", type=["dcm"], accept_multiple_files=True
+)
+
+if uploaded_files:
+    try:
+        slices = [pydicom.dcmread(f) for f in uploaded_files]
+        slices.sort(key=lambda x: int(getattr(x, 'InstanceNumber', 0)))
+        images = [s.pixel_array.astype(np.float32) for s in slices]
 
 
-blurred = cv2.GaussianBlur(ds.pixel_array, (5, 5), 0)
-edges = cv2.Canny(ds.pixel_array, 100, 200)
+        slice_idx = st.sidebar.slider("Select Slice", 0, len(images) - 1, 0)
+        brightness = st.sidebar.slider("Brightness", -100, 100, 0)
+        contrast = st.sidebar.slider("Contrast", 1, 3, 1)
+        zoom = st.sidebar.slider("Zoom", 1, 5, 1)
+        blur = st.sidebar.checkbox("Apply Blur")
+        edge = st.sidebar.checkbox("Edge Detection")
+
+        img = images[slice_idx].copy()
 
 
-zoomed = ds.pixel_array[100:300, 100:300]
-plt.imshow(zoomed, cmap="gray")
+        img = img * contrast + brightness
+        img = np.clip(img, 0, 255)
+
+        h, w = img.shape
+        zh, zw = h // zoom, w // zoom
+        img = img[h//2 - zh//2:h//2 + zh//2, w//2 - zw//2:w//2 + zw//2]
+        img = cv2.resize(img, (w, h), interpolation=cv2.INTER_CUBIC)
 
 
-import glob
-slices = [pydicom.dcmread(f) for f in glob.glob("*.dcm")]
-slices.sort(key=lambda x: int(x.InstanceNumber))
+        if blur:
+            img = cv2.GaussianBlur(img, (5, 5), 0)
+        if edge:
+            img = cv2.Canny(img.astype(np.uint8), 50, 150)
+
+
+        img_display = Image.fromarray(img.astype(np.uint8))
+        st.image(img_display, caption=f"Slice {slice_idx + 1}/{len(images)}", use_column_width=True)
+
+    except Exception as e:
+        st.error(f"⚠️ Error reading DICOM files: {e}")
+else:
+    st.info("👈 Upload multiple DICOM (.dcm) files using the sidebar to begin.")
+
