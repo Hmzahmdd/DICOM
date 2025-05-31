@@ -18,18 +18,18 @@ if uploaded_files:
         images = [s.pixel_array.astype(np.float32) for s in slices]
 
 
-        try:
-    num_slices = len(images)
-    if num_slices > 1:
-        slice_idx = st.sidebar.slider("Select Slice", 0, num_slices - 1, 0)
-    else:
-        slice_idx = 0
-        st.info("Only one slice uploaded, slice scrolling disabled.")
+    try:
+        num_slices = len(images)
+        if num_slices > 1:
+            slice_idx = st.sidebar.slider("Select Slice", 0, num_slices - 1, 0)
+        else:
+            slice_idx = 0
+            st.info("Only one slice uploaded, slice scrolling disabled.")
 
     # more code here...
 
-except Exception as e:
-    st.error(f"⚠️ Error reading DICOM files: {e}")
+    except Exception as e:
+        st.error(f"⚠️ Error reading DICOM files: {e}")
 
 
 
