@@ -28,7 +28,7 @@ if uploaded_files:
 
     # more code here...
 
-    except Exception as e:
+except Exception as e:
         st.error(f"⚠️ Error reading DICOM files: {e}")
 
 
