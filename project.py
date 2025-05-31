@@ -26,11 +26,6 @@ if uploaded_files:
             slice_idx = 0
             st.info("Only one slice uploaded, slice scrolling disabled.")
 
-    # more code here...
-
-except Exception as e:
-        st.error(f"⚠️ Error reading DICOM files: {e}")
-
 
 
         brightness = st.sidebar.slider("Brightness", -100, 100, 0)
@@ -51,6 +46,7 @@ except Exception as e:
         img = cv2.resize(img, (w, h), interpolation=cv2.INTER_CUBIC)
 
 
+        
         if blur:
             img = cv2.GaussianBlur(img, (5, 5), 0)
         if edge:
@@ -61,6 +57,9 @@ except Exception as e:
         st.image(img_display, caption=f"Slice {slice_idx + 1}/{len(images)}", use_column_width=True)
 
     except Exception as e:
+        st.error(f"⚠️ Error reading DICOM files: {e}")
+
+except Exception as e:
         st.error(f"⚠️ Error reading DICOM files: {e}")
 else:
     st.info("👈 Upload multiple DICOM (.dcm) files using the sidebar to begin.")
