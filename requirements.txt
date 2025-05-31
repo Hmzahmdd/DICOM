@@ -1,5 +1,5 @@
 streamlit
 pydicom
 numpy
-opencv-python
+opencv-python-headless
 Pillow
