@@ -18,7 +18,12 @@ if uploaded_files:
         images = [s.pixel_array.astype(np.float32) for s in slices]
 
 
-        slice_idx = st.sidebar.slider("Select Slice", 0, len(images) - 1, 0)
+        num_slices = len(images)
+if num_slices > 1:
+    slice_idx = st.sidebar.slider("Select Slice", 0, num_slices - 1, 0)
+else:
+    slice_idx = 0
+
         brightness = st.sidebar.slider("Brightness", -100, 100, 0)
         contrast = st.sidebar.slider("Contrast", 1, 3, 1)
         zoom = st.sidebar.slider("Zoom", 1, 5, 1)
